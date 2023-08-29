@@ -1,18 +1,17 @@
 package com.technicalApi.technicalApi.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.technicalApi.technicalApi.model.CallDetailRecord;
 import com.technicalApi.technicalApi.repository.CallDetailRecordRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/records")
@@ -21,23 +20,20 @@ public class RecordController {
     @Autowired
     private CallDetailRecordRepository recordRepository;
 
-    @GetMapping("/search")
+    @PostMapping("/search")
     public ResponseEntity<List<CallDetailRecord>> searchRecords(
-            @RequestParam("record_date_start") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime recordDateStart,
-            @RequestParam("record_date_end") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime recordDateEnd,
-            @RequestParam(name = "msisdn", required = false) String msisdn,
-            @RequestParam(name = "imsi", required = false) String imsi
-    ) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String formattedRecordDateStart = recordDateStart.format(formatter);
-        String formattedRecordDateEnd = recordDateEnd.format(formatter);
+            @RequestBody Map<String, Object> payload) throws JsonProcessingException {
+
+        String recordDateStart = (String) payload.get("record_date_start");
+        String recordDateEnd = (String) payload.get("record_date_end");
+        String msisdn = (String) payload.get("msisdn");
+        String imsi = (String) payload.get("imsi");
 
         List<CallDetailRecord> records = recordRepository.searchRecords(
-                formattedRecordDateStart,
-                formattedRecordDateEnd,
+                recordDateStart,
+                recordDateEnd,
                 msisdn,
-                imsi
-        );
+                imsi);
 
         return ResponseEntity.ok(records);
     }
